@@ -9,11 +9,15 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alirezaafkar.json.requester.interfaces.ContentType;
 import com.alirezaafkar.json.requester.interfaces.Methods;
@@ -21,6 +25,7 @@ import com.alirezaafkar.json.requester.interfaces.Response;
 import com.alirezaafkar.json.requester.requesters.JsonObjectRequester;
 import com.alirezaafkar.json.requester.requesters.RequestBuilder;
 import com.androidadvance.topsnackbar.TSnackbar;
+import com.squareup.picasso.Picasso;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 
 import org.json.JSONObject;
@@ -28,6 +33,7 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity {
 
     private EditText editText;
+    private ImageView imageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +42,9 @@ public class MainActivity extends AppCompatActivity {
         //load correct xml layout for activity
         setContentView(R.layout.activity_main);
 
-        //bind edit text object to view in xml
+        //bind edit text and image view objects to views in xml
         editText = (EditText) findViewById(R.id.edt_text);
+        imageView = (ImageView) findViewById(R.id.imageView);
 
         //set done button
         editText.setImeOptions(EditorInfo.IME_ACTION_DONE);
@@ -68,6 +75,29 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        //set listener when user retries to search for company
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                //Clear and hide image view if visible
+                if(imageView.isShown()) {
+                    imageView.setImageResource(android.R.color.transparent);
+                    imageView.setVisibility(View.GONE);
+                }
+                editText.setBackgroundColor(Color.WHITE);
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
     }
 
     private void performSearch(String companyName) {
@@ -88,12 +118,28 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(int requestCode, @Nullable JSONObject jsonObject) {
+                        System.out.println("REQUEST onResponse " + jsonObject);
+                        System.out.println("REQUEST requestCode: " + requestCode);
+
                         //this could be response code ????
                         if(requestCode == 200){
+                            editText.setBackgroundColor(Color.GREEN);
+                            showAlertWith("Company exists.");
 
+                            String name = jsonObject.optString("name");
+                            String logo = jsonObject.optString("logo");
+                            String custom_color = jsonObject.optString("custom_color");
+                            boolean enabled = jsonObject.optJSONObject("password_changing").optBoolean("enabled");
+                            boolean secure = jsonObject.optJSONObject("password_changing").optBoolean("secure_field");
+
+                            Company company = new Company(name, logo, custom_color, enabled, secure);
+                            editText.setText(company.name);
+                            imageView.setVisibility(View.VISIBLE);
+                            Picasso.with(MainActivity.this).load(company.logo).into(imageView);
                         }
                         else {
-
+                            editText.setBackgroundColor(Color.RED);
+                            showAlertWith("Company does not exist.");
                         }
                     }
 
@@ -128,5 +174,9 @@ public class MainActivity extends AppCompatActivity {
 
         //set up endpoint and make request
         mRequester.request(Methods.GET, companyName + ".fusion-universal.com/api/v1/company.json", data);
+    }
+
+    private void showAlertWith(String text){
+        Toast.makeText(this, text, Toast.LENGTH_LONG).show();
     }
 }
