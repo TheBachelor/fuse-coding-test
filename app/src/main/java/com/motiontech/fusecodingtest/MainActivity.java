@@ -63,11 +63,11 @@ public class MainActivity extends AppCompatActivity {
                     else {
                         //Display message if validation fails
                         TSnackbar snackbar = TSnackbar.make(findViewById(android.R.id.content), "Company name must be more than one character.", TSnackbar.LENGTH_LONG);
-                        snackbar.setActionTextColor(Color.WHITE);
+
                         View snackbarView = snackbar.getView();
-                        snackbarView.setBackgroundColor(Color.parseColor("#CC00CC"));
+                        snackbarView.setBackgroundColor(Color.BLACK);
                         TextView textView = (TextView) snackbarView.findViewById(com.androidadvance.topsnackbar.R.id.snackbar_text);
-                        textView.setTextColor(Color.YELLOW);
+                        textView.setTextColor(Color.WHITE);
                         snackbar.show();
                     }
                 }
