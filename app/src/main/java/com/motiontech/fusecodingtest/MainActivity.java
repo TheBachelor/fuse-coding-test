@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                     else {
                         //Display message if validation fails
-
                         TSnackbar snackbar = TSnackbar.make(findViewById(android.R.id.content), "Company name must be more than one character.", TSnackbar.LENGTH_LONG);
                         snackbar.setActionTextColor(Color.WHITE);
                         View snackbarView = snackbar.getView();
@@ -91,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
                     imageView.setVisibility(View.GONE);
                 }
                 editText.setBackgroundColor(Color.WHITE);
+                editText.setTextColor(Color.BLACK);
             }
 
             @Override
@@ -120,10 +120,10 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(int requestCode, @Nullable JSONObject jsonObject) {
                         System.out.println("REQUEST onResponse " + jsonObject);
                         System.out.println("REQUEST requestCode: " + requestCode);
+                        dialog.dismiss();
 
-                        //this could be response code ????
-                        if(requestCode == 200){
-                            editText.setBackgroundColor(Color.GREEN);
+                        //this couldn't use response code in this library so I found another way
+                        if(!jsonObject.optString("name").isEmpty()){
                             showAlertWith("Company exists.");
 
                             String name = jsonObject.optString("name");
@@ -135,9 +135,14 @@ public class MainActivity extends AppCompatActivity {
                             Company company = new Company(name, logo, custom_color, enabled, secure);
                             editText.setText(company.name);
                             imageView.setVisibility(View.VISIBLE);
+
+                            editText.setTextColor(Color.WHITE);
+                            editText.setBackgroundColor(Color.parseColor("#16CA81"));
+                            System.out.println("setBackgroundColor: GREEN");
                             Picasso.with(MainActivity.this).load(company.logo).into(imageView);
                         }
                         else {
+                            editText.setTextColor(Color.WHITE);
                             editText.setBackgroundColor(Color.RED);
                             showAlertWith("Company does not exist.");
                         }
@@ -145,6 +150,11 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onErrorResponse(int requestCode, com.android.volley.VolleyError volleyError, @Nullable JSONObject errorObject) {
+                        dialog.dismiss();
+
+                        editText.setTextColor(Color.WHITE);
+                        editText.setBackgroundColor(Color.RED);
+                        showAlertWith("Company does not exist.");
                         System.out.println("REQUEST ERROR RESPONSE");
                         System.out.println("REQUEST ERROR: " + errorObject);
                     }
